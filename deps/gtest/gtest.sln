@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "gtest.vcxproj", "{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release_x64|Win32 = Release_x64|Win32
+		Debug_x64|Win32 = Debug_x64|Win32
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}.Release_x64|Win32.ActiveCfg = Release_x64|Win32
+		{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}.Release_x64|Win32.Build.0 = Release_x64|Win32
+		{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}.Debug_x64|Win32.ActiveCfg = Debug_x64|Win32
+		{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}.Debug_x64|Win32.Build.0 = Debug_x64|Win32
+		{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}.Debug|Win32.Build.0 = Debug|Win32
+		{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}.Release|Win32.ActiveCfg = Release|Win32
+		{02FDA48E-FCE2-F31A-04B9-3E62B04C95A4}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
