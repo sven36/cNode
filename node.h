@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "v8\v8.h"
 
 namespace node {

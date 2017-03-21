@@ -21,16 +21,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="node.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="v8\libplatform\libplatform.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="v8\v8.h">
@@ -41,10 +32,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="cNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="cNode.cpp">
+    <ClCompile Include="node.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
