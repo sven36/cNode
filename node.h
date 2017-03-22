@@ -102,6 +102,12 @@ public:
 	int exit_code() {
 		return exit_code_;
 	}
+	bool is_main() {
+		return node_type == MAIN;
+	}
+	uv_loop_t* event_loop() {
+		return event_loop_;
+	}
 
 private:
 	const NodeInstanceType node_type;

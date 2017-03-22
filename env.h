@@ -1,4 +1,5 @@
 
+
 class Environment
 {
 public:
@@ -18,8 +19,12 @@ public:
 			kFieldCount
 		};
 	};
+	static inline Environment* New(v8::Local<v8::Context> context, uv_loop_t* loop);
+	inline Environment(v8::Local<v8::Context> context, uv_loop_t* loop);
+	inline ~Environment();
 
 
 private:
+	v8::Isolate* const isolate_;
 
 };
