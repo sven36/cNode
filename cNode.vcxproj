@@ -138,6 +138,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="env.h" />
     <ClInclude Include="node.h" />
     <ClInclude Include="v8\v8-debug.h" />
     <ClInclude Include="v8\v8.h" />

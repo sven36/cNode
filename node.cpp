@@ -14,21 +14,46 @@ static struct
 		platform_ = v8::platform::CreateDefaultPlatform(thread_pool_size);
 		V8::InitializePlatform(platform_);
 	}
+
+	void Dispose() {
+		delete platform_;
+		platform_ = nullptr;
+	}
+
 	Platform* platform_;
 }v8_platform;
+
+
+
 
 
 int node::Start(int argc, char * argv[])
 {
 	int exec_argc;
+	int exit_code = 1;
 	const char** exec_argv;
 	v8_platform.Initialize(v8_thread_pool_size);
 	V8::Initialize();
 	{
 		NodeInstanceData instance_data(NodeInstanceType::MAIN,uv_default_loop(),argc,const_cast<const char**>(argv),exec_argc, exec_argv, use_debug_agent);
+		StartNodeInstance(&instance_data);
+		exit_code = instance_data.exit_code();
 	}
-	return 0;
+	V8::Dispose();
+	v8_platform.Dispose();
+	delete[] exec_argv;
+	exec_argv = nullptr;
+	return exit_code;
 }
 static void StartNodeInstance(void* arg) {
+	NodeInstanceData* instance_data = static_cast<NodeInstanceData*>(arg);
+	Isolate::CreateParams params;
+	ArrayBufferAllocator* array_buffer_allocator = new ArrayBufferAllocator();
+	params.array_buffer_allocator = array_buffer_allocator;
 
+	Isolate* isolate = Isolate::New(params);
+	{
+		
+		Mutex::ScopedLock scoped_lock();
+	}
 }
