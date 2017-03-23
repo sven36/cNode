@@ -21,9 +21,13 @@ namespace node {
 
 	void* Malloc(size_t size) {
 		if (size == 0)
-			size == 1;
+			size = 1;
 		return Realloc(nullptr, size);
 	}
+	//
+	template<class TypeName>
+	inline v8::Local<TypeName> StrongPersistentToLocal(const v8::Persistent<TypeName>& persistent);
+
 	template <typename Traits> class ConditionVariableBase;
 	template <typename Traits> class MutexBase;
 

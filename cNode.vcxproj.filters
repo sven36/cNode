@@ -27,13 +27,7 @@
     <ClInclude Include="v8\v8.h">
       <Filter>v8</Filter>
     </ClInclude>
-    <ClInclude Include="v8\v8-debug.h">
-      <Filter>v8</Filter>
-    </ClInclude>
     <ClInclude Include="env.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="debug-agent.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,8 +3,6 @@
 #include "deps\v8\src\handles.h"
 #include "deps\v8\src\api.h"
 
-ENVIRONMENT_STRONG_PERSISTENT_PROPERTIES(V)
-
 using namespace v8;
 
 static int v8_thread_pool_size = 4;
@@ -105,7 +103,34 @@ inline Environment::Environment(v8::Local<v8::Context> context, uv_loop_t* loop)
 	HandleScope handle_scope(isolate());
 	Context::Scope context_scope(context);
 	set_as_external(v8::External::New(isolate(), this));
+	set_binding_cache_object(v8::Object::New(isolate()));
+	set_module_load_list_array(v8::Array::New(isolate()));
+
+	v8::Local<v8::FunctionTemplate> fn = v8::FunctionTemplate::New(isolate());
+	fn->SetClassName();
 }
+template <class TypeName>
+inline v8::Local<TypeName> StrongPersistentToLocal(const v8::Persistent<TypeName>& persistent) {
+	return *reinterpret_cast<v8::Local<TypeName>*>(const_cast<v8::Local<TypeName*>>(&persistent));
+}
+
+inline v8::Local<v8::External> Environment::as_external() const {
+		return StrongPersistentToLocal(as_external_);                        \
+  }  
+
+inline void Environment::set_as_external(v8::Local<v8::External> value) {
+	as_external_.Reset(isolate(), value);
+}
+
+#define V(PropertyName, TypeName)                                             \
+  inline v8::Local<TypeName> Environment::PropertyName() const {              \
+    return StrongPersistentToLocal(PropertyName ## _);                        \
+  }                                                                           \
+  inline void Environment::set_ ## PropertyName(v8::Local<TypeName> value) {  \
+    PropertyName ## _.Reset(isolate(), value);                                \
+  }
+ENVIRONMENT_STRONG_PERSISTENT_PROPERTIES(V)
+#undef V
 	;
 
 

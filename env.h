@@ -1,7 +1,7 @@
 
-#define V(PropertyName, TypeName)   
+//V(as_external, v8::External)
 #define ENVIRONMENT_STRONG_PERSISTENT_PROPERTIES(V)                           \
-  V(as_external, v8::External)                                                \
+                                              \
   V(async_hooks_destroy_function, v8::Function)                               \
   V(async_hooks_init_function, v8::Function)                                  \
   V(async_hooks_post_function, v8::Function)                                  \
@@ -32,7 +32,6 @@
   V(write_wrap_constructor_function, v8::Function)                            \
 
 
-
 class Environment
 {
 public:
@@ -56,7 +55,14 @@ public:
 	inline Environment(v8::Local<v8::Context> context, uv_loop_t* loop);
 	inline ~Environment();
 	inline v8::Isolate* isolate() const;
+	inline v8::Local<v8::External> as_external() const;
+	inline void set_as_external(v8::Local<v8::External> value);
 
+#define V(PropertyName, TypeName)                                             \
+  inline v8::Local<TypeName> PropertyName() const;                            \
+  inline void set_ ## PropertyName(v8::Local<TypeName> value);
+	ENVIRONMENT_STRONG_PERSISTENT_PROPERTIES(V)
+#undef V
 private:
 	v8::Isolate* const isolate_;
 	class IsolateData;
@@ -70,9 +76,16 @@ private:
 	std::vector<int64_t> destroy_ids_list_;
 	//Agent debugger_agent_;
 	char* http_parser_buffer_;
-	Persistent<Context> context_;
+	//v8::Persistent<v8::Context> context_;
 	class IsolateData {
 	public:
-		static inline IsolateData* GetOrCreate(Isolate* isolate, uv_loop_t* loop);
+		static inline IsolateData* GetOrCreate(v8::Isolate* isolate, uv_loop_t* loop);
 	};
+	v8::Persistent<v8::External> as_external_;
+
+#define V(PropertyName, TypeName)                                             \
+  v8::Persistent<TypeName> PropertyName ## _;
+	ENVIRONMENT_STRONG_PERSISTENT_PROPERTIES(V)
+#undef V
 };
+
