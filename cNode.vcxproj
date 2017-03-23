@@ -138,6 +138,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="debug-agent.h" />
     <ClInclude Include="env.h" />
     <ClInclude Include="node.h" />
     <ClInclude Include="v8\v8-debug.h" />
@@ -145,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cNode.cpp" />
+    <ClCompile Include="debug-agent.cc" />
     <ClCompile Include="node.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

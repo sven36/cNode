@@ -1,11 +1,16 @@
 #include "node.h"
 #include "v8\libplatform\libplatform.h"
+#include "deps\v8\src\handles.h"
+#include "deps\v8\src\api.h"
+
+ENVIRONMENT_STRONG_PERSISTENT_PROPERTIES(V)
 
 using namespace v8;
 
 static int v8_thread_pool_size = 4;
 static bool use_debug_agent = false;
 static Isolate* node_isolate;
+
 
 static struct 
 {
@@ -85,5 +90,23 @@ inline Environment* Environment::New(v8::Local<v8::Context> context,uv_loop_t* l
 	Environment* env = new Environment(context, loop);
 
 }
+inline Isolate* Environment::isolate() const {
+	return isolate_;
+}
 inline Environment::Environment(v8::Local<v8::Context> context, uv_loop_t* loop)
-	:isolate_(context->)
+	:isolate_(context->GetIsolate()),
+	isolate_data_(IsolateData::GetOrCreate(context->GetIsolate(), loop)),
+	timer_base_(uv_now(loop)),
+	using_domains_(false),
+	printed_error_(false),
+	trace_sync_io_(false),
+	http_parser_buffer_(nullptr),
+	context_(context->GetIsolate(), context) {
+	HandleScope handle_scope(isolate());
+	Context::Scope context_scope(context);
+	set_as_external(v8::External::New(isolate(), this));
+}
+	;
+
+
+	

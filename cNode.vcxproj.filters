@@ -33,12 +33,18 @@
     <ClInclude Include="env.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="debug-agent.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="node.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="debug-agent.cc">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
