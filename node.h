@@ -1,5 +1,5 @@
-#include "v8\v8.h"
-#include "deps\uv\include\uv.h"
+#include "deps\v8\include\v8.h"
+//#include "deps\uv\include\uv.h"
 #include "env.h"
 
 

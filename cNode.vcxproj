@@ -138,9 +138,9 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="deps\v8\include\v8.h" />
     <ClInclude Include="env.h" />
     <ClInclude Include="node.h" />
-    <ClInclude Include="v8\v8.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cNode.cpp" />

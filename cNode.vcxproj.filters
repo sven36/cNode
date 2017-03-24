@@ -24,11 +24,11 @@
     <ClInclude Include="node.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="v8\v8.h">
-      <Filter>v8</Filter>
-    </ClInclude>
     <ClInclude Include="env.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="deps\v8\include\v8.h">
+      <Filter>v8</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
