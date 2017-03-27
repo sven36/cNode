@@ -69,6 +69,36 @@ namespace node {
 		DISALLOW_COPY_AND_ASSIGN(ListNode);
 	};
 
+	template <typename T, ListNode<T>(T::*M)>
+	class ListHead {
+	public:
+		class Iterator {
+		public:
+			inline T* operator*() const;
+			inline const Iterator& operator++();
+			inline bool operator!=(const Iterator& that) const;
+
+		private:
+			friend class ListHead;
+			inline explicit Iterator(ListNode<T>* node);
+			ListNode<T>* node_;
+		};
+
+		inline ListHead() = default;
+		inline ~ListHead();
+		inline void MoveBack(ListHead* that);
+		inline void PushBack(T* element);
+		inline void PushFront(T* element);
+		inline bool IsEmpty() const;
+		inline T* PopFront();
+		inline Iterator begin() const;
+		inline Iterator end() const;
+
+	private:
+		ListNode<T> head_;
+		DISALLOW_COPY_AND_ASSIGN(ListHead);
+	};
+
 	class Environment
 	{
 	public:

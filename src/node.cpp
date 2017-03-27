@@ -79,9 +79,9 @@ void SetupProcessObject(Environment* env, int argc, const char* const* argv, int
 	auto title_string = node::OneByteString(env->isolate(), "title", sizeof("title") - 1);
 	env->context();
 	//process.version
-	READONLY_PROPERTY(process, "version", FIXED_ONE_BYTE_STRING(env->isolate(), "cNode1.0~"));
-	//process.moduleLoadList
-	READONLY_PROPERTY(process, "moduleLoadList", env->module_load_list_array());
+	//READONLY_PROPERTY(process, "version", FIXED_ONE_BYTE_STRING(env->isolate(), "cNode1.0~"));
+	////process.moduleLoadList
+	//READONLY_PROPERTY(process, "moduleLoadList", env->module_load_list_array());
 }
 
 static Environment* CreateEnvironment(Isolate* isolate, Local<Context> context, node::NodeInstanceData* instance_data) {

@@ -2,9 +2,17 @@
 #include "uv\include\uv.h"
 
 namespace node {
+
+
+#define DISALLOW_COPY_AND_ASSIGN(TypeName)                                    \
+  void operator=(const TypeName&) = delete;                                   \
+  void operator=(TypeName&&) = delete;                                        \
+  TypeName(const TypeName&) = delete;                                         \
+  TypeName(TypeName&&) = delete
+
 	_declspec(dllexport) int Start(int argc, char *argv[]);
 
-	//
+	/*
 	template<class TypeName>
 	inline v8::Local<TypeName> StrongPersistentToLocal(const v8::Persistent<TypeName>& persistent);
 
@@ -73,8 +81,6 @@ namespace node {
 	struct LibuvMutexTraits {
 		using CondT = uv_cond_t;
 		using MutexT = uv_mutex_t;
-	};
+	};*/
 
 }
-
-
