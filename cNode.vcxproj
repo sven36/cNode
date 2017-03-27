@@ -88,6 +88,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\NodeSrc\cNode\deps;E:\NodeSrc\cNode\deps\v8\base;E:\NodeSrc\cNode\deps\v8\include;E:\NodeSrc\cNode\deps\v8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,13 +140,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="deps\v8\include\v8.h" />
-    <ClInclude Include="env.h" />
-    <ClInclude Include="node.h" />
+    <ClInclude Include="src\env-inl.h" />
+    <ClInclude Include="src\env.h" />
+    <ClInclude Include="src\node-internals.h" />
+    <ClInclude Include="src\node.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cNode.cpp" />
-    <ClCompile Include="debug-agent.cc" />
-    <ClCompile Include="node.cpp" />
+    <ClCompile Include="src\cNode.cpp" />
+    <ClCompile Include="src\node.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cNode.gyp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -21,25 +21,31 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="node.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="env.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="deps\v8\include\v8.h">
       <Filter>v8</Filter>
     </ClInclude>
+    <ClInclude Include="src\env.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\node.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\env-inl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\node-internals.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cNode.cpp">
+    <ClCompile Include="src\cNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="node.cpp">
+    <ClCompile Include="src\node.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="debug-agent.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cNode.gyp" />
   </ItemGroup>
 </Project>
