@@ -1,12 +1,15 @@
 #include "node.h"
 #include "libplatform\libplatform.h"
-#include "src\handles.h"
-#include "src\api.h"
+#include "handles.h"
+#include "api.h"
 #include "env.h"
 #include "env-inl.h"
 #include "node-internals.h"
+#include "node_javascript.h"
+
 
 using namespace v8;
+using node::Environment;
 
 static int v8_thread_pool_size = 4;
 static bool use_debug_agent = false;
@@ -33,6 +36,9 @@ static struct
 		platform_ = v8::platform::CreateDefaultPlatform(thread_pool_size);
 		V8::InitializePlatform(platform_);
 	}
+	void PumpMessageLoop(Isolate* isolate) {
+		v8::platform::PumpMessageLoop(platform_, isolate);
+	}
 
 	void Dispose() {
 		delete platform_;
@@ -41,6 +47,87 @@ static struct
 
 	Platform* platform_;
 }v8_platform;
+
+Local<Value> MakeCallback(Environment* env,Local<Object> recv,const char* method,int argc,Local<Value> argv[]) {
+	Local<String> method_string = node::OneByteString(env->isolate(), method,-1);
+	Local<Value> cb_v = recv->Get(method_string);
+	//env, recv.As<Value>(), cb_v.As<Function>(), argc, argv);
+	recv = recv.As<Value>();
+	const Local<Function> callback = cb_v.As<Function>();
+	Local<Function> pre_fn = env->async_hooks_pre_function();
+	Local<Function> post_fn = env->async_hooks_post_function();
+	Local<Object> object, domain;
+	bool ran_init_callback = false;
+	bool has_domain = false;
+	Environment::AsyncCallbackScope callback_scope(env);
+
+	if (recv->IsObject()) {
+		object = recv.As<Object>();
+		Local<Value> async_queue_v = object->Get(env->async_queue_string());
+		if (async_queue_v->IsObject()) {
+			ran_init_callback = true;
+		}
+	}
+	if (env->using_domains()) {
+		Local<Value> domain_v = object->Get(env->domain_string());
+		has_domain = domain_v->IsObject();
+		if (has_domain) {
+			domain = domain_v.As<Object>();
+			if (domain->Get(env->disposed_string())->IsTrue())
+				return Undefined(env->isolate());
+		}
+	}
+	Local<Value> ret = callback->Call(recv, argc, argv);
+	if (ret.IsEmpty()) {
+		return callback_scope.in_makecallback() ? ret : Undefined(env->isolate()).As<Value>();
+	}
+	if (callback_scope.in_makecallback()) {
+		return ret;
+	}
+	Environment::TickInfo* tick_info = env->tick_info();
+	if (tick_info->length()==0) {
+		env->isolate()->RunMicrotasks();
+	}
+	Local<Object> process = env->process_object();
+	if (tick_info->length() == 0) {
+		tick_info->set_index(0);
+	}
+	if (env->tick_callback_function()->Call(process,0,nullptr).IsEmpty()) {
+		return Undefined(env->isolate());
+	}
+	return ret;
+}
+
+void EmitBeforeExit(Environment* env) {
+	HandleScope handle_scope(env->isolate());
+	Context::Scope context_scope(env->context());
+	Local<Object> process_object = env->process_object();
+	Local<String> exit_code = FIXED_ONE_BYTE_STRING(env->isolate, "exitCode");
+	Local<Value> args[] = {
+		FIXED_ONE_BYTE_STRING(env->isolate(),"beforeExit"),
+		process_object->Get(exit_code)->ToInteger(env->isolate())
+	};
+	MakeCallback(env,process_object,"emit",arraysize(args),args);
+}
+
+static Local<Value> ExecuteString(Environment* env,Local<String> source, Local<String> filename) {
+	EscapableHandleScope scope(env->isolate());
+	ScriptOrigin origin(filename);
+	MaybeLocal<Script> script = Script::Compile(env->context(), source, &origin);
+	Local<Value> result = script.ToLocalChecked()->Run();
+	return scope.Escape(result);
+}
+
+void LoadEnvironment(Environment* env) {
+	HandleScope handle_scope(env->isolate());
+	//env->isolate()->SetFatalErrorHandler(node::Onf);
+	Local<String> script_name = FIXED_ONE_BYTE_STRING(env->isolate(), "cNodeStart.js");
+	Local<Value> f_value = ExecuteString(env, node::MainSource(env), script_name);
+	Local<Function> f = Local<Function>::Cast(f_value);
+	Local<Object> global = env->context()->Global();
+	Local<Value> arg = env->process_object();
+	f->Call(Null(env->isolate()), 1, &arg);
+}
 
 static void StartNodeInstance(void* arg) {
 	node::NodeInstanceData* instance_data = static_cast<node::NodeInstanceData*>(arg);
@@ -69,7 +156,35 @@ static void StartNodeInstance(void* arg) {
 		Isolate::Scope isolate_scope(isolate);
 		HandleScope handle_sope(isolate);
 		Local<Context> context = Context::New(isolate);
-		Environment* env = CreateEnvironment(isolate, context, instance_data);
+		node::Environment* env = CreateEnvironment(isolate, context, instance_data);
+		array_buffer_allocator->set_env(env);
+		Context::Scope content_scope(context);
+
+		//isolate->SetAbortOnUncaughtExceptionCallback();
+		{
+			node::Environment::AsyncCallbackScope callback_scope(env);
+			LoadEnvironment(env);
+		}
+		//env->set_trac
+		{
+			SealHandleScope seal(isolate);
+			bool more;
+			do {
+				v8_platform.PumpMessageLoop(isolate);
+				more = uv_run(env->event_loop(), UV_RUN_ONCE);
+				if (more==false) {
+					v8_platform.PumpMessageLoop(isolate);
+					EmitBeforeExit(env);
+
+					more = uv_loop_alive(env->event_loop());
+					if (uv_run(env->event_loop(),UV_RUN_NOWAIT)!=0) {
+						more = true;
+					}
+				}
+			} while (more == true);
+		}
+
+		//int exit_code=
 	}
 }
 
@@ -84,7 +199,7 @@ void SetupProcessObject(Environment* env, int argc, const char* const* argv, int
 	//READONLY_PROPERTY(process, "moduleLoadList", env->module_load_list_array());
 }
 
-static Environment* CreateEnvironment(Isolate* isolate, Local<Context> context, node::NodeInstanceData* instance_data) {
+static node::Environment* CreateEnvironment(Isolate* isolate, Local<Context> context, node::NodeInstanceData* instance_data) {
 	HandleScope handle_sope(isolate);
 	Context::Scope context_scope(context);
 	Environment* env = Environment::New(context, instance_data->event_loop());

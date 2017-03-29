@@ -87,8 +87,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\NodeSrc\cNode\deps;E:\NodeSrc\cNode\deps\v8\base;E:\NodeSrc\cNode\deps\v8\include;E:\NodeSrc\cNode\deps\v8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>deps\v8;deps\v8\src;deps\uv\include;deps\cares\include;deps\http_parser;deps\zlib;deps\openssl\openssl\include;deps\icu-small\source\common;deps\icu-small\source\i18n;deps\v8\include;deps\v8_inspector\third_party\v8_inspector;deps\uv\src\ares;tools\msvs\genfiles;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,10 +147,12 @@
     <ClInclude Include="src\env.h" />
     <ClInclude Include="src\node-internals.h" />
     <ClInclude Include="src\node.h" />
+    <ClInclude Include="src\node_javascript.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\cNode.cpp" />
     <ClCompile Include="src\node.cpp" />
+    <ClCompile Include="src\node_javascript.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cNode.gyp" />

@@ -1,5 +1,5 @@
 #include "v8.h"
-#include "uv\include\uv.h"
+#include "uv.h"
 
 namespace node {
 
@@ -12,7 +12,7 @@ namespace node {
 
 	_declspec(dllexport) int Start(int argc, char *argv[]);
 
-	/*
+	
 	template<class TypeName>
 	inline v8::Local<TypeName> StrongPersistentToLocal(const v8::Persistent<TypeName>& persistent);
 
@@ -81,6 +81,6 @@ namespace node {
 	struct LibuvMutexTraits {
 		using CondT = uv_cond_t;
 		using MutexT = uv_mutex_t;
-	};*/
+	};
 
 }

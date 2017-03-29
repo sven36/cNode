@@ -1,6 +1,6 @@
 
 #include "v8.h"
-#include "uv\include\uv.h"
+#include "uv.h"
 #include "env.h"
 
 
@@ -71,7 +71,7 @@ namespace node {
 	{
 	public:
 		ArrayBufferAllocator() :env_(nullptr) {};
-		inline void set_env(Environment* env) { env_ = env; }
+		inline void set_env(node::Environment* env) { env_ = env; }
 		virtual void* Allocate(size_t size);
 		virtual void* AllocateUninitialized(size_t size) {
 			return node::Malloc(size);

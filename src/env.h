@@ -1,6 +1,15 @@
 
 
 namespace node {
+
+
+#define PER_ISOLATE_STRING_PROPERTIES(V)                                      \
+  V(domain_string, "domain")                                                  \
+  V(disposed_string, "_disposed")                                             \
+  V(enter_string, "enter")                                                    \
+
+
+
 	//V(as_external, v8::External)
 #define ENVIRONMENT_STRONG_PERSISTENT_PROPERTIES(V)                           \
                                               \
@@ -39,9 +48,9 @@ namespace node {
   TypeName(const TypeName&) = delete;                                         \
   TypeName(TypeName&&) = delete
 
-#include "cares\include\ares.h"
-#include "uv\include\uv.h"
-#include "uv\include\tree.h"
+#include "ares.h"
+#include "uv.h"
+#include "tree.h"
 
 	class Environment;
 
@@ -119,6 +128,35 @@ namespace node {
 			};
 		};
 
+		class TickInfo {
+		public:
+			inline uint32_t index() const;
+			inline uint32_t length() const;
+			inline void set_index(uint32_t value);
+		private:
+			friend class Environment;
+			inline TickInfo();
+			enum Fields {
+				kIndex,kLength,kFieldsCount
+			};
+			uint32_t fields_[kFieldsCount];
+
+			DISALLOW_COPY_AND_ASSIGN(TickInfo);
+		};
+
+		class AsyncCallbackScope
+		{
+		public:
+			explicit AsyncCallbackScope(Environment * env);
+			~AsyncCallbackScope();
+
+			inline bool in_makecallback();
+		private:
+			Environment* env_;
+			DISALLOW_COPY_AND_ASSIGN(AsyncCallbackScope);
+		};
+
+
 		typedef void(*HandleCleanupCb)(Environment* ebv, uv_handle_t* handle, void* arg);
 		class HandleCleanUp
 		{
@@ -178,6 +216,21 @@ namespace node {
 			void *arg);
 		inline void FinishHandleCleanup(uv_handle_t* handle);
 
+		inline v8::Local<v8::String> Environment::async_queue_string() const;
+
+		inline bool using_domains() const;
+		inline TickInfo* tick_info();
+
+#define VP(PropertyName, StringValue) V(v8::Private, PropertyName, StringValue)
+#define VS(PropertyName, StringValue) V(v8::String, PropertyName, StringValue)
+#define V(TypeName, PropertyName, StringValue)                                \
+  inline v8::Local<TypeName> PropertyName() const;
+		//PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(VP)
+			PER_ISOLATE_STRING_PROPERTIES(VS)
+#undef V
+#undef VS
+#undef VP
+
 #define V(PropertyName, TypeName)                                             \
   inline v8::Local<TypeName> PropertyName() const;                            \
   inline void set_ ## PropertyName(v8::Local<TypeName> value);
@@ -189,7 +242,6 @@ namespace node {
 		inline IsolateData* isolate_data() const;
 		IsolateData* const isolate_data_;
 		const uint64_t timer_base_;
-		bool using_domains_;
 		bool printed_error_;
 		bool trace_sync_io_;
 		size_t makecallback_cntr_;
@@ -204,6 +256,7 @@ namespace node {
 		uv_idle_t immediate_idle_handle_;
 		uv_prepare_t idle_prepare_handle_;
 		uv_check_t idle_check_handle_;
+		TickInfo tick_info_;
 
 		ListHead<HandleCleanUp,
 			&HandleCleanUp::handle_clean_queue_> handle_clean_queue_;
@@ -215,10 +268,34 @@ namespace node {
 		public:
 			static inline IsolateData* GetOrCreate(v8::Isolate* isolate, uv_loop_t* loop);
 			inline uv_loop_t* event_loop() const;
+			inline v8::Local<v8::String> async_queue_string() const;
+#define VP(PropertyName, StringValue) V(v8::Private, PropertyName, StringValue)
+#define VS(PropertyName, StringValue) V(v8::String, PropertyName, StringValue)
+#define V(TypeName, PropertyName, StringValue)                                \
+    inline v8::Local<TypeName> PropertyName() const;
+			//PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(VP)
+				PER_ISOLATE_STRING_PROPERTIES(VS)
+#undef V
+#undef VS
+#undef VP
 		private:
 			uv_loop_t* const event_loop_;
+			v8::Eternal<v8::String> async_queue_string_;
+#define VP(PropertyName, StringValue) V(v8::Private, PropertyName, StringValue)
+#define VS(PropertyName, StringValue) V(v8::String, PropertyName, StringValue)
+#define V(TypeName, PropertyName, StringValue)                                \
+    v8::Eternal<TypeName> PropertyName ## _;
+			//PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(VP)
+			PER_ISOLATE_STRING_PROPERTIES(VS)
+#undef V
+#undef VS
+#undef VP
 		};
 		v8::Persistent<v8::External> as_external_;
+		v8::Eternal<v8::String> async_queue_string_;
+		//bool using_domains_;
+
+
 
 #define V(PropertyName, TypeName)                                             \
   v8::Persistent<TypeName> PropertyName ## _;

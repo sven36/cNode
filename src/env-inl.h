@@ -2,6 +2,7 @@
 #include "env.h"
 
 using namespace v8;
+using node::Environment;
 
 namespace node {
 
@@ -106,6 +107,9 @@ namespace node {
 		void *arg) {
 		handle_clean_queue_.PushBack(new HandleCleanUp(handle, cb, arg));
 	}
+	inline bool Environment::using_domains() const {
+		return using_domains_;
+	}
 
 	inline Environment::Environment(v8::Local<v8::Context> context, uv_loop_t* loop)
 		:isolate_(context->GetIsolate()),
@@ -132,6 +136,44 @@ namespace node {
 		handle_cleanup_waiting_ = 0;
 		destroy_ids_list_.reserve(512);
 	}
+
+	inline v8::Local<v8::String> Environment::async_queue_string() const {
+		return isolate_data()->async_queue_string();
+	}
+	inline v8::Local<v8::String> Environment::IsolateData::async_queue_string() const {
+		return const_cast<IsolateData*>(this)->async_queue_string_.Get(isolate());
+	}
+	inline Environment::TickInfo* Environment::tick_info() {
+		return &tick_info_;
+	}
+	inline void Environment::TickInfo::set_index(uint32_t value) {
+		fields_[kIndex] = value;
+	}
+#define VP(PropertyName, StringValue) V(v8::Private, PropertyName, StringValue)
+#define VS(PropertyName, StringValue) V(v8::String, PropertyName, StringValue)
+#define V(TypeName, PropertyName, StringValue)                                \
+  inline                                                                      \
+  v8::Local<TypeName> Environment::IsolateData::PropertyName() const {        \
+    /* Strings are immutable so casting away const-ness here is okay. */      \
+    return const_cast<IsolateData*>(this)->PropertyName ## _.Get(isolate());  \
+  }
+	//PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(VP)
+		PER_ISOLATE_STRING_PROPERTIES(VS)
+#undef V
+#undef VS
+#undef VP
+
+#define VP(PropertyName, StringValue) V(v8::Private, PropertyName, StringValue)
+#define VS(PropertyName, StringValue) V(v8::String, PropertyName, StringValue)
+#define V(TypeName, PropertyName, StringValue)                                \
+  inline v8::Local<TypeName> Environment::PropertyName() const {              \
+    return isolate_data()->PropertyName();                                    \
+  }
+		//PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(VP)
+		PER_ISOLATE_STRING_PROPERTIES(VS)
+#undef V
+#undef VS
+#undef VP
 
 #define V(PropertyName, TypeName)                                             \
   inline v8::Local<TypeName> Environment::PropertyName() const {              \

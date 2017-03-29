@@ -36,12 +36,18 @@
     <ClInclude Include="src\node-internals.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\node_javascript.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\cNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\node.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\node_javascript.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
