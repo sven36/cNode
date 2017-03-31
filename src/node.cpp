@@ -1,7 +1,7 @@
 #include "node.h"
 #include "libplatform\libplatform.h"
-#include "handles.h"
-#include "api.h"
+#include "src\handles.h"
+#include "src\api.h"
 #include "env.h"
 #include "env-inl.h"
 #include "node-internals.h"
@@ -32,7 +32,6 @@ static void HandleCleanup(Environment* env,
 static struct 
 {
 	void Initialize(int thread_pool_size) {
-		//CreateDefaultPlatform是一个虚函数；重写它并初始化；
 		platform_ = v8::platform::CreateDefaultPlatform(thread_pool_size);
 		V8::InitializePlatform(platform_);
 	}
@@ -47,6 +46,19 @@ static struct
 
 	Platform* platform_;
 }v8_platform;
+
+static void Binding(const FunctionCallbackInfo<Value>& args) {
+	Environment* env = Environment::GetCurrent(args);
+	Local<String> module = args[0]->ToString(env->isolate());
+	//node::utf
+	Local<Object> cache = env->binding_cache_object();
+	Local<Object> exports;
+	if (cache->Has(env->context(),module).FromJust()) {
+		exports = cache->Get(module)->ToObject(env->isolate());
+		args.GetReturnValue().Set(exports);
+		return;
+	}
+}
 
 Local<Value> MakeCallback(Environment* env,Local<Object> recv,const char* method,int argc,Local<Value> argv[]) {
 	Local<String> method_string = node::OneByteString(env->isolate(), method,-1);
@@ -134,7 +146,8 @@ static void StartNodeInstance(void* arg) {
 	Isolate::CreateParams params;
 	node::ArrayBufferAllocator* array_buffer_allocator = new node::ArrayBufferAllocator();
 	params.array_buffer_allocator = array_buffer_allocator;
-
+	//Isolate是一个独立的v8实例(v8 vm虚拟机)，每个v8 vm都拥有自己的堆Heap，如果每个线程都运行一个v8 vm的话；
+	//内存占用就会很大；可以多线程使用同一个Isolate，多个线程在使用v8的时候就需要Locker进行同步；
 	Isolate* isolate = Isolate::New(params);
 	{
 		//Mutex::ScopedLock scoped_lock();
@@ -152,12 +165,17 @@ static void StartNodeInstance(void* arg) {
 		/*一个函数中，可以有很多Handle，而HandleScope则相当于用来装Handle（Local）的容器，当HandleScope生命周期结束的时候，
 		Handle也将会被释放，会引起Heap中对象引用的更新。HandleScope是分配在栈上，不能通过New的方式进行创建。
 		对于同一个作用域内可以有多个HandleScope，新的HandleScope将会覆盖上一个HandleScope，并对Local Handle进行管理。*/
+		
 		Locker locker(isolate);
 		Isolate::Scope isolate_scope(isolate);
+		
 		HandleScope handle_sope(isolate);
+		
+		//创建一个新的Context，可以理解为JavaScript执行环境；
 		Local<Context> context = Context::New(isolate);
 		node::Environment* env = CreateEnvironment(isolate, context, instance_data);
 		array_buffer_allocator->set_env(env);
+		//进入新创建的Context环境；
 		Context::Scope content_scope(context);
 
 		//isolate->SetAbortOnUncaughtExceptionCallback();
@@ -194,9 +212,10 @@ void SetupProcessObject(Environment* env, int argc, const char* const* argv, int
 	auto title_string = node::OneByteString(env->isolate(), "title", sizeof("title") - 1);
 	env->context();
 	//process.version
-	//READONLY_PROPERTY(process, "version", FIXED_ONE_BYTE_STRING(env->isolate(), "cNode1.0~"));
-	////process.moduleLoadList
-	//READONLY_PROPERTY(process, "moduleLoadList", env->module_load_list_array());
+	READONLY_PROPERTY(process, "version", FIXED_ONE_BYTE_STRING(env->isolate(), "cNode1.0~"));
+	//process.moduleLoadList
+	READONLY_PROPERTY(process, "moduleLoadList", env->module_load_list_array());
+	env->SetMethod(process,"binding",Binding);
 }
 
 static node::Environment* CreateEnvironment(Isolate* isolate, Local<Context> context, node::NodeInstanceData* instance_data) {
@@ -249,7 +268,10 @@ int node::Start(int argc, char * argv[])
 	int exec_argc;
 	int exit_code = 1;
 	const char** exec_argv;
+	//v8 platform是v8引擎留出的一个接口，platform代表一个抽象层;
+	//嵌入V8的时候需要先自己实现这个platform;然后把指针赋给V8::platform_
 	v8_platform.Initialize(v8_thread_pool_size);
+	//初始化V8引擎，包括Isolate，Sampler，CpuFeatures，ElementsAccessor等；在v8.cc
 	V8::Initialize();
 	{
 		NodeInstanceData instance_data(NodeInstanceType::MAIN,uv_default_loop(),argc,const_cast<const char**>(argv),exec_argc, exec_argv, use_debug_agent);

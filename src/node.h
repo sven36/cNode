@@ -1,5 +1,5 @@
 #include "v8.h"
-#include "uv.h"
+#include "uv\include\uv.h"
 
 namespace node {
 

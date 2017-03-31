@@ -1,6 +1,6 @@
 
 #include "v8.h"
-#include "uv.h"
+#include "uv\include\uv.h"
 #include "env.h"
 
 

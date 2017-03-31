@@ -48,9 +48,9 @@ namespace node {
   TypeName(const TypeName&) = delete;                                         \
   TypeName(TypeName&&) = delete
 
-#include "ares.h"
-#include "uv.h"
-#include "tree.h"
+#include "cares\include\ares.h"
+#include "uv\include\uv.h"
+#include "uv\include\tree.h"
 
 	class Environment;
 
@@ -220,6 +220,11 @@ namespace node {
 
 		inline bool using_domains() const;
 		inline TickInfo* tick_info();
+		inline void SetMethod(v8::Local<v8::Object> that,const char* name,v8::FunctionCallback callback);
+
+		static inline Environment* GetCurrent(v8::Isolate *isolate);
+		static inline Environment* GetCurrent(const v8::FunctionCallbackInfo<v8::Value>& info);
+
 
 #define VP(PropertyName, StringValue) V(v8::Private, PropertyName, StringValue)
 #define VS(PropertyName, StringValue) V(v8::String, PropertyName, StringValue)
@@ -293,7 +298,7 @@ namespace node {
 		};
 		v8::Persistent<v8::External> as_external_;
 		v8::Eternal<v8::String> async_queue_string_;
-		//bool using_domains_;
+		bool using_domains_;
 
 
 

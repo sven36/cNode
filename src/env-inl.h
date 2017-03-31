@@ -110,6 +110,19 @@ namespace node {
 	inline bool Environment::using_domains() const {
 		return using_domains_;
 	}
+	inline void Environment::SetMethod(v8::Local<v8::Object> that,const char* name,v8::FunctionCallback callback) {
+		v8::Local<v8::External> external = as_external();
+		auto f = v8::FunctionTemplate::New(isolate(), callback, external);
+		v8::Local<v8::Function> function = f->GetFunction();
+		const v8::NewStringType type = v8::NewStringType::kInternalized;
+		v8::Local<v8::String> name_string = v8::String::NewFromUtf8(isolate(), name, type).ToLocalChecked();
+		that->Set(name_string, function);
+		function->SetName(name_string);
+	}
+
+	inline Environment* Environment::GetCurrent(const v8::FunctionCallbackInfo<v8::Value>& info) {
+		return static_cast<Environment*>(info.Data().As<v8::External>()->Value());
+	}
 
 	inline Environment::Environment(v8::Local<v8::Context> context, uv_loop_t* loop)
 		:isolate_(context->GetIsolate()),

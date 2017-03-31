@@ -84,3 +84,5 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 .vs/cNode/v15/.suo
+/.vs/cNode/v15/Browse.VC.opendb
+/.vs/cNode/v15/Browse.VC.opendb
