@@ -6,7 +6,7 @@ using node::Environment;
 
 namespace node {
 
-	inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate, const char* data, int length) {
+	inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate, const char* data, int length=-1) {
 		return v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(data), v8::NewStringType::kNormal, length).ToLocalChecked();
 	}
 

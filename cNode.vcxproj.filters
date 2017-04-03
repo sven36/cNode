@@ -45,6 +45,12 @@
     <ClInclude Include="src\util.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\node_buffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\base64.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\cNode.cpp">
@@ -60,6 +66,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\util.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\node_buffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

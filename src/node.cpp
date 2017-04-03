@@ -6,7 +6,7 @@
 #include "env-inl.h"
 #include "node-internals.h"
 #include "node_javascript.h"
-
+#include "util.h"
 
 using namespace v8;
 using node::Environment;
@@ -15,6 +15,7 @@ static int v8_thread_pool_size = 4;
 static bool use_debug_agent = false;
 static v8::Isolate* node_isolate;
 static const int kContextEmbedderDataIndex = 32;//NODE_CONTEXT_EMBEDDER_DATA_INDEX;
+static node::node_module* modlist_builtin;
 
 
 static void HandleCloseCb(uv_handle_t* handle) {
@@ -47,10 +48,19 @@ static struct
 	Platform* platform_;
 }v8_platform;
 
+struct node::node_module* get_builtin_module(const char* name) {
+	struct node::node_module* mp;
+	for (mp == modlist_builtin; mp != nullptr;mp=mp->nm_link) {
+		if (strcmp(mp->nm_modulename, name) == 0)
+			break;
+	}
+	return(mp);
+}
+
 static void Binding(const FunctionCallbackInfo<Value>& args) {
 	Environment* env = Environment::GetCurrent(args);
 	Local<String> module = args[0]->ToString(env->isolate());
-	//node::utf
+	node::Utf8Value module_v(env->isolate(), module);
 	Local<Object> cache = env->binding_cache_object();
 	Local<Object> exports;
 	if (cache->Has(env->context(),module).FromJust()) {
@@ -58,6 +68,26 @@ static void Binding(const FunctionCallbackInfo<Value>& args) {
 		args.GetReturnValue().Set(exports);
 		return;
 	}
+
+	char buf[1024];
+	snprintf(buf, sizeof(buf), "Bingding %s", *module_v);
+	Local<Array> modules = env->module_load_list_array();
+	uint32_t l = modules->Length();
+	modules->Set(1, node::OneByteString(env->isolate(), buf));
+	node::node_module* mod = get_builtin_module(*module_v);
+	if (mod != nullptr) {
+		exports = Object::New(env->isolate());
+		Local<Value> unused = Undefined(env->isolate());
+		mod->nm_context_register_func(exports, unused, env->context(), mod->nm_priv);
+		cache->Set(module, exports);
+	}
+	else if(!strcmp(*module_v, "natives"))
+	{
+		exports = Object::New(env->isolate());
+		DefineJavaScript(env, exports);
+		cache->Set(module, exports);
+	}
+	args.GetReturnValue().Set(exports);
 }
 
 Local<Value> MakeCallback(Environment* env,Local<Object> recv,const char* method,int argc,Local<Value> argv[]) {

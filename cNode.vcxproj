@@ -143,10 +143,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="deps\v8\include\v8.h" />
+    <ClInclude Include="src\base64.h" />
     <ClInclude Include="src\env-inl.h" />
     <ClInclude Include="src\env.h" />
     <ClInclude Include="src\node-internals.h" />
     <ClInclude Include="src\node.h" />
+    <ClInclude Include="src\node_buffer.h" />
     <ClInclude Include="src\node_javascript.h" />
     <ClInclude Include="src\string_bytes.h" />
     <ClInclude Include="src\util.h" />
@@ -154,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="src\cNode.cpp" />
     <ClCompile Include="src\node.cpp" />
+    <ClCompile Include="src\node_buffer.cpp" />
     <ClCompile Include="src\node_javascript.cpp" />
     <ClCompile Include="src\string_bytes.cpp" />
     <ClCompile Include="src\util.cpp" />

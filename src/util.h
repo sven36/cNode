@@ -12,6 +12,10 @@ public:
 	T*out() {
 		return buf_;
 	}
+	const T* operator*() const {
+		return buf_;
+	}
+
 	MaybeStackBuffer() :length_(0), buf_(buf_st_) {
 		buf_[0] = T();
 	}
@@ -20,7 +24,23 @@ public:
 			free(buf_);
 		}
 	}
-
+	void AllocateSufficientStorage(size_t storage) {
+		if (storage <= kStackStorageSize) {
+			buf_ = buf_st_;
+		}
+		else
+		{
+			buf_ = static_cast<T*>(node::Malloc(sizeof(T)* storage));
+		}
+		length_ = storage;
+	}
+	void SetLength(size_t length) {
+		length_ = length;
+	}
+	void SetLengthAndZeroTerminate(size_t length) {
+		SetLength(length);
+		buf_[length] = T();
+	}
 
 private:
 	size_t length_;
