@@ -7,8 +7,9 @@
  ------------------------------------------------------------------------------------------------------------------------
 先说一下node.js启动过程：
 
-       node.js的src目录下的源代码大部分都是node.js的模块文件；其实初始化node.js用到的文件只有：node.h , node.cc , env.h , env_inl.h ,
-       node_internals.h , node_javascript.h , node_javascript.cc , util.h , util.cc ,以及用js2c.py工具将内置JavaScript代码转成C++里面的数组，生成的node_natives.h文件;
+    node.js的src目录下的源代码大部分都是node.js的模块文件；其实初始化node.js用到的文件只有：node.h , node.cc , env.h , env_inl.h ,
+node_internals.h , node_javascript.h , node_javascript.cc , util.h , util.cc ,以及用js2c.py工具将内置JavaScript代码转成C++里面的数组，
+生成的node_natives.h文件;
 
 我实现的过程是按照node.js的启动过程，需要哪个方法就实现哪个方法，能合并的方法都尽量合并，能忽略的细节都尽量忽略，
 下面简单说说node.js启动主要的方法和过程；
@@ -36,7 +37,8 @@ env->set_process_object(process_object);
 在v8里面一个template是javascript函数的蓝图。你可以使用一个template来将c++函数和结构体包装到javascript对象中，让javascirpt脚本来使用它。
 所以我们经常调用的process.binding,process.cpuUsage,process.dlopen等方法，其实是在调用包装成js脚本的C++方法；
 
-接下来的SetupProcessObject方法就是具体初始化process对象的方法了，除了只读属性process.versions,process.moduleLoadList等;更重要的是通过Environment::SetMethod方法，把C++方法包装成js脚本方法；比如:
+接下来的SetupProcessObject方法就是具体初始化process对象的方法了，除了只读属性process.versions,process.moduleLoadList等;
+更重要的是通过Environment::SetMethod方法，把C++方法包装成js脚本方法；比如:
 
   env->SetMethod(process, "binding", Binding);
 
