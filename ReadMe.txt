@@ -10,15 +10,18 @@
        node.js的src目录下的源代码大部分都是node.js的模块文件；其实初始化node.js用到的文件只有：node.h , node.cc , env.h , env_inl.h ,
        node_internals.h , node_javascript.h , node_javascript.cc , util.h , util.cc ,以及用js2c.py工具将内置JavaScript代码转成C++里面的数组，生成的node_natives.h文件;
 
-我实现的过程是按照node.js的启动过程，需要哪个方法就实现哪个方法，能合并的方法都尽量合并，能忽略的细节都尽量忽略，下面简单说说node.js启动主要的方法和过程；
+我实现的过程是按照node.js的启动过程，需要哪个方法就实现哪个方法，能合并的方法都尽量合并，能忽略的细节都尽量忽略，
+下面简单说说node.js启动主要的方法和过程；
 
 入口是在node_main.cc中，根据平台的不同会进入不同的Start方法，我的是windows平台，运行的wmain方法，然后调用了node::Start方法；
 
-node::Start方法的具体实现是在node.cc中，node.cc也是node的核心代码；在启动过程中需要注意的有四个方法：StartNodeInstance，在StartNodeInstance里面调用的CreateEnvironment方法，
+node::Start方法的具体实现是在node.cc中，node.cc也是node的核心代码；在启动过程中需要注意的有四个方法：StartNodeInstance，
+在StartNodeInstance里面调用的CreateEnvironment方法，
 
 在CreateEnvironment方法里面调用的SetupProcessObject方法，以及CreateEnvironment结束之后调用的LoadEnvironment方法；
 
-StartNodeInstance在初始化v8虚拟机，绑定作用域之后就会调用CreateEnvironment方法；CreateEnvironment会初始化Environment类，该方法定义在env_inl.h文件中；
+StartNodeInstance在初始化v8虚拟机，绑定作用域之后就会调用CreateEnvironment方法；CreateEnvironment会初始化Environment类，
+该方法定义在env_inl.h文件中；
 
 CreateEnvironment在初始化Environment类之后，会先初始化v8的的CPU分析器，再初始化handle的回收方法，然后就会初始化全局process对象；
 
@@ -30,7 +33,8 @@ process_template->SetClassName(node::OneByteString(isolate, "process", sizeof("p
 Local<Object> process_object = process_template->GetFunction()->NewInstance(context).ToLocalChecked();
 env->set_process_object(process_object);
 
-在v8里面一个template是javascript函数的蓝图。你可以使用一个template来将c++函数和结构体包装到javascript对象中，让javascirpt脚本来使用它。所以我们经常调用的process.binding,process.cpuUsage,process.dlopen等方法，其实是在调用包装成js脚本的C++方法；
+在v8里面一个template是javascript函数的蓝图。你可以使用一个template来将c++函数和结构体包装到javascript对象中，让javascirpt脚本来使用它。
+所以我们经常调用的process.binding,process.cpuUsage,process.dlopen等方法，其实是在调用包装成js脚本的C++方法；
 
 接下来的SetupProcessObject方法就是具体初始化process对象的方法了，除了只读属性process.versions,process.moduleLoadList等;更重要的是通过Environment::SetMethod方法，把C++方法包装成js脚本方法；比如:
 
@@ -44,9 +48,11 @@ Local<String> script_name = FIXED_ONE_BYTE_STRING(env->isolate(),
 "bootstrap_node.js");
 Local<Value> f_value = ExecuteString(env, MainSource(env), script_name);
 
-其中ExecuteString方法会调用v8::Script::Compile方法来编译传入的js文件；那我们知道了bootstrap_node.js是一个被调用的js文件，在这个里面又发生了什么呢？
+其中ExecuteString方法会调用v8::Script::Compile方法来编译传入的js文件；那我们知道了bootstrap_node.js是一个被调用的js文件，
+在这个里面又发生了什么呢？
 
-大概可以分为：初始化全局 process 对象上的部分属性 / 行为，初始化全局的一些 timer 方法，初始化全局 console 对象等一些方法；这里我们不展开了，我们看一看node的js模块是如何引入的；
+大概可以分为：初始化全局 process 对象上的部分属性 / 行为，初始化全局的一些 timer 方法，初始化全局 console 对象等一些方法；
+这里我们不展开了，我们看一看node的js模块是如何引入的；
 
 
 function NativeModule(id) {
@@ -104,7 +110,8 @@ static const uint8_t buffer_name[] = {
 
 所以process.binding('natives')其实是使用v8引擎，编译我们内置的js文件；
 
-到这里node.js的启动过程和文件模块机制基本上就说了个大概了，其它诸如非核心模块的引入，和buffer,stream等应C++完成核心部分，其它部分用js包装或导出的模块就需要大家自己去了解了；
+到这里node.js的启动过程和文件模块机制基本上就说了个大概了，其它诸如非核心模块的引入，和buffer,stream等应C++完成核心部分，
+其它部分用js包装或导出的模块就需要大家自己去了解了；
 
 
 
@@ -114,17 +121,21 @@ static const uint8_t buffer_name[] = {
 --------------------------------------------------------------------------------------------------------------------------------------
 前言：
 
-最近在看Node.js，看了一段时间后便想着自己实现一个Node.js现在已经实现了个大概（绝大部分是模仿人家，不过自己实现一遍基本上就理解Node.js的原理了）下面便说说这个过程中的坑，以及一些需要注意的地方；
+最近在看Node.js，看了一段时间后便想着自己实现一个Node.js现在已经实现了个大概（绝大部分是模仿人家，不过自己实现一遍基本上就理解Node.js的原理了）
+下面便说说这个过程中的坑，以及一些需要注意的地方；
 
       Node.js需要一定C++基础，建议看完C++Primer再看，否则V8的好多表达方式，指针，引用，模板之类的会看不懂；
 
 编译：我用的win10的环境，具体编译请参考Node.js的编译说明：https://github.com/nodejs/node/blob/master/BUILDING.md
 
-        其中的坑：Python应该是2.6或2.7，不要装3.0或以上的，因为node.js有的py文件3.0编译出错； Visual C++ Build Tools必须是2015，安装官方的链接就是，因为Node.js在Windows平台的编译用的是vs2015的v140平台工具集，用低版本的或者vs2017的v141平台工具集都会报错；
+        其中的坑：Python应该是2.6或2.7，不要装3.0或以上的，因为node.js有的py文件3.0编译出错； Visual C++ Build Tools必须是2015，
+        安装官方的链接就是，因为Node.js在Windows平台的编译用的是vs2015的v140平台工具集，用低版本的或者vs2017的v141平台工具集都会报错；
 
  
 
-        编译流程：安装完python和Visual C++ Build Tools2015之后，下载node.js的源码  node-v6.10.0.tar.gz  然后用Visual C++ Build Tools2015的命令行运行解压目录下的vcbuild.bat处理文件就会开始编译了；编译成功后解压目录下就会出现.sln文件就可以使用vs打开了（vs也需要是2015或2017，并且项目的平台工具集也需要是v140否则编译报错）；
+        编译流程：安装完python和Visual C++ Build Tools2015之后，下载node.js的源码  node-v6.10.0.tar.gz  
+        然后用Visual C++ Build Tools2015的命令行运行解压目录下的vcbuild.bat处理文件就会开始编译了；
+        编译成功后解压目录下就会出现.sln文件就可以使用vs打开了（vs也需要是2015或2017，并且项目的平台工具集也需要是v140否则编译报错）；
 
 
 自己实现一个Node.js的难点与思路：
