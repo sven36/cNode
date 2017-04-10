@@ -6,7 +6,8 @@
  ------------------------------------------------------------------------------------------------------------------------
 先说一下node.js启动过程：
 
-       node.js的src目录下的源代码大部分都是node.js的模块文件；其实初始化node.js用到的文件只有：node.h , node.cc , env.h , env_inl.h , node_internals.h , node_javascript.h , node_javascript.cc , util.h , util.cc ,以及用js2c.py工具将内置JavaScript代码转成C++里面的数组，生成的node_natives.h文件;
+       node.js的src目录下的源代码大部分都是node.js的模块文件；其实初始化node.js用到的文件只有：node.h , node.cc , env.h , env_inl.h ,
+       node_internals.h , node_javascript.h , node_javascript.cc , util.h , util.cc ,以及用js2c.py工具将内置JavaScript代码转成C++里面的数组，生成的node_natives.h文件;
 
 我实现的过程是按照node.js的启动过程，需要哪个方法就实现哪个方法，能合并的方法都尽量合并，能忽略的细节都尽量忽略，下面简单说说node.js启动主要的方法和过程；
 
